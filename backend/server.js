@@ -4,6 +4,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const db = require("./config/db");
+const connectDB = require("./config/db");
+const genAI = require("./config/gemini");
+const inventoryRoutes = require("./routes/inventoryRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,14 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-if (process.env.MONGODB_URI) {
-  mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch((err) => console.error("❌ MongoDB Connection Error:", err));
-} else {
-  console.warn("⚠️ MONGODB_URI is not set.");
-}
+connectDB();
 
 // Health Check
 app.get("/api/health", (req, res) => {
@@ -30,6 +29,11 @@ app.get("/api/health", (req, res) => {
     message: "ShelfWise AI Backend is running 🚀",
   });
 });
+
+// Routes
+app.use("/api/products", inventoryRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
 
 // Production Build
 if (process.env.NODE_ENV === "production") {
